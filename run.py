@@ -94,6 +94,12 @@ def dualsmc():
 
             #######################################
             # Planning
+            # M : belief stateを近似するための粒子の数
+            # N : Planningに用いる"belief state"の粒子の数
+            # C : stateの次元の数
+            # H : Planningの水平線の長さ
+            # T :
+            # dim_a : 行動の次元の数
             if SMCP_MODE == 'topk':
                 weight_init, idx = torch.topk(par_weight, NUM_PAR_SMC_INIT)
                 idx = idx.detach().cpu().numpy()
