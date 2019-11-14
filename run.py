@@ -114,7 +114,7 @@ def dualsmc():
             # M個からN個を選ぶ選び方を以下のif分で切り替える。
             # topk : weightが大きい上からM個をとる。
             # samp : normalized weightを生起確率としたcategorical分布に従いM個サンプリングする。
-            #こんなこと論文中に書いて居なかったので、以上は自分の推論である。
+            #論文中に書いて居なかったので、以上は自分の推論である。
             if SMCP_MODE == 'topk':
                 weight_init, idx = torch.topk(par_weight, NUM_PAR_SMC_INIT)
                 idx = idx.detach().cpu().numpy()
@@ -124,7 +124,7 @@ def dualsmc():
             
             # 変数の説明
             # weight_init, smcpに用いる粒子のweightの初期値。
-            weight_init = torch.softmax(weight_init, -1).unsqueeze(1).repeat(1, NUM_PAR_SMC)  # [M, N]　        #Algorithm 2, line 1
+            weight_init = torch.softmax(weight_init, -1).unsqueeze(1).repeat(1, NUM_PAR_SMC)  # [M, N] #Algorithm 2, line 1
             # Algorithm 1, line 5:
             states_init = par_states[idx]  # [K, C] -> [M, C] 
             states_init_ = np.reshape(states_init, (1, NUM_PAR_SMC_INIT, 1, DIM_STATE))  # [1, M, 1, C]
@@ -251,7 +251,7 @@ def dualsmc():
             # Algorithm 1, line 11:
             if TRAIN:
                 model.replay_buffer.push(curr_state, action, reward, next_state, env.done, curr_obs,
-                                         curr_s, mean_state, hidden, cell, states_init)
+                                        curr_s, mean_state, hidden, cell, states_init)
                 # Algorithm 1, line 12: 
                 if len(model.replay_buffer) > BATCH_SIZE:
                     model.soft_q_update()

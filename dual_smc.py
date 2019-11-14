@@ -164,6 +164,8 @@ class ProposerNetwork(nn.Module):
         proposal = self.p_net(x)  # [B * num_par, 2]
         return proposal
 
+#########################
+# Measurement model
 class MeasureNetwork(nn.Module):
     def __init__(self):
         super(MeasureNetwork, self).__init__()
@@ -296,8 +298,10 @@ class DUAL_SMC:
         return q
 
     def soft_q_update(self):
+        # リプレイバッファからサンプリング
         state_batch, action_batch, reward_batch, next_state_batch, done_batch, \
             obs, curr_par, mean_state, hidden, cell, pf_sample = self.replay_buffer.sample(BATCH_SIZE)
+        # sampleされたものを前処理(?):ここから
         state_batch = torch.FloatTensor(state_batch).to(device)
         next_state_batch = torch.FloatTensor(next_state_batch).to(device)
         action_batch = torch.FloatTensor(action_batch).to(device)
@@ -311,6 +315,7 @@ class DUAL_SMC:
         hidden = torch.transpose(torch.squeeze(hidden), 0, 1).contiguous()
         cell = torch.FloatTensor(cell).to(device)
         cell = torch.transpose(torch.squeeze(cell), 0, 1).contiguous()
+        # sampleされたものを前処理(?):ここまで
 
         # ------------------------
         #  Train Particle Proposer
@@ -343,10 +348,10 @@ class DUAL_SMC:
         # ------------------------
         self.measure_optimizer.zero_grad()
         fake_logit, next_hidden, next_cell = self.measure_net.m_model(curr_par.view(-1, DIM_STATE),
-                                                                      curr_obs, hidden, cell, NUM_PAR_PF)  # (B, K)
+                                                                        curr_obs, hidden, cell, NUM_PAR_PF)  # (B, K)
         if PP_EXIST:
             fake_logit_pp, _, _ = self.measure_net.m_model(state_propose.detach(),
-                                                           curr_obs, hidden, cell, NUM_PAR_PF)  # (B, K)
+                                                            curr_obs, hidden, cell, NUM_PAR_PF)  # (B, K)
             fake_logit = torch.cat((fake_logit, fake_logit_pp), -1)  # (B, 2K)
         fake_target = torch.zeros_like(fake_logit)
         fake_loss = self.BCE_criterion(fake_logit, fake_target)
@@ -367,7 +372,7 @@ class DUAL_SMC:
         self.dynamic_optimizer.step()
 
         # ------------------------
-        #  Train SAC
+        #  Train SAC (i.e. Train Q Network and Gaussian Policy)
         # ------------------------
         next_mean_state = self.dynamic_net.t_model(mean_state, action_batch * STEP_RANGE)
         next_par_sample = self.dynamic_net.t_model(
