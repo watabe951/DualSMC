@@ -8,6 +8,7 @@ import math
 import torch
 import torch.nn.functional as F
 import matplotlib.pyplot as plt
+import matplotlib
 from torch.distributions import Normal
 from torch.distributions.categorical import Categorical
 from dual_smc import DUAL_SMC
@@ -33,7 +34,7 @@ def dualsmc():
 
     #学習はEpisodicな環境で行われる
     for episode in range(MAX_EPISODES):
-        
+        print("episode:{}/{}".format(episode+1,MAX_EPISODES))
         #Algorithim1, line1:
         episode += 1
         env = Environment()
@@ -137,7 +138,7 @@ def dualsmc():
             mean_state = np.reshape(mean_state, (1, 1, DIM_STATE))  # [1, 1, C]
             smc_mean_state = np.tile(mean_state, (HORIZON, NUM_PAR_SMC, 1))  # [T, N, C]
 
-            prev_q = 0 　#　Q関数の初期値（？）  
+            prev_q = 0 #　Q関数の初期値（？）  
 
             # Algorithm 2, line 3:
             for i in range(HORIZON):
@@ -148,8 +149,13 @@ def dualsmc():
                     torch.transpose(curr_smc_state, 0, 1).contiguous().view(NUM_PAR_SMC, -1)) # [N, M * C]
                 action_tile = action.unsqueeze(0).repeat(NUM_PAR_SMC_INIT, 1, 1).view(-1, DIM_ACTION) # ? 
                 # Algorithm 2, line 5:
+                # ssss = torch.FloatTensor(smc_states[i]).to(
+                #     device)
+                # ssss = ssss.reshape(-1, DIM_STATE)
+                # next_smc_state = model.dynamic_net.t_model(
+                #     ssss,  action_tile * STEP_RANGE)
                 next_smc_state = model.dynamic_net.t_model(
-                    torch.FloatTensor(smc_states[i]).to(device).view(-1, DIM_STATE),  action_tile * STEP_RANGE)
+                    torch.FloatTensor(smc_states[i]).to(device).reshape(-1, DIM_STATE),  action_tile * STEP_RANGE)
                 next_smc_state[:, 0] = torch.clamp(next_smc_state[:, 0], 0, 2)
                 next_smc_state[:, 1] = torch.clamp(next_smc_state[:, 1], 0, 1)
                 next_smc_state = next_smc_state.view(NUM_PAR_SMC_INIT, NUM_PAR_SMC, DIM_STATE)
@@ -167,7 +173,7 @@ def dualsmc():
                     smc_mean_state[i + 1] = mean_par.detach().cpu().numpy()
                 
                 # Algorithm 2, line 7:
-                q = model.get_q(curr_smc_state.view(-1, DIM_STATE), action_tile).view(NUM_PAR_SMC_INIT, -1)
+                q = model.get_q(curr_smc_state.reshape(-1, DIM_STATE), action_tile).reshape(NUM_PAR_SMC_INIT, -1)
                 advantage = q - prev_q - log_prob.unsqueeze(0).repeat(NUM_PAR_SMC_INIT, 1) # [M, N]
                 advantage = torch.sum(weight_init * advantage, 0).squeeze()  # [N]
                 smc_weight += advantage

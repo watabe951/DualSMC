@@ -12,7 +12,7 @@ MAX_STEPS = 200
 FIG_FORMAT = '.png'
 IMG = 'img/'
 CKPT = 'ckpt/'
-device = 'cuda'
+device = 'cpu'
 
 ######################
 # Network
@@ -32,7 +32,7 @@ SAVE_ITER = 1000
 SUMMARY_ITER = 1000
 DISPLAY_ITER = 10
 SHOW_TRAJ = True
-SHOW_DISTR = False
+SHOW_DISTR = True
 
 ######################
 # Filtering
