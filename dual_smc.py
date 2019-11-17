@@ -183,6 +183,7 @@ class MeasureNetwork(nn.Module):
             nn.Linear(DIM_LSTM_HIDDEN, self.dim_m),
             nn.ReLU()
         )
+        # likelihoodを出力する
         self.m_net = nn.Sequential(
             nn.Linear(self.dim_m + DIM_STATE, DIM_HIDDEN),
             nn.ReLU(),
@@ -193,8 +194,8 @@ class MeasureNetwork(nn.Module):
         )
 
     def m_model(self, state, obs, hidden, cell, num_par=NUM_PAR_PF):
-        # state: (B * K, dim_s)
-        # obs: (B, dim_s)
+        # state: (B * K, dim_s), stateはparticlesの事
+        # obs: (B, dim_obs)
         obs_enc = self.obs_encode(obs)  # (batch, dim_m)
         x = obs_enc.unsqueeze(0)  # -> [1, batch_size, dim_obs]
         x, (h, c) = self.lstm(x, (hidden, cell))

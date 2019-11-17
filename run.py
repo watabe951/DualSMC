@@ -256,6 +256,8 @@ def dualsmc():
             #######################################
             # Algorithm 1, line 11:
             if TRAIN:
+                # 現在の状態、Transistionmodelの現在の状態に対する予測、現在の行動、報酬、次ステップの状態、next_stateが終端状態かどうか、
+                # curr_stateの観測、
                 model.replay_buffer.push(curr_state, action, reward, next_state, env.done, curr_obs,
                                         curr_s, mean_state, hidden, cell, states_init)
                 # Algorithm 1, line 12: 
